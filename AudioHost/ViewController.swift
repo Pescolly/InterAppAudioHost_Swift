@@ -24,54 +24,6 @@ class ViewController: UIViewController
 		// Do any additional setup after loading the view, typically from a nib.
 	}
 
-	func startAudioSession()
-	{
-		do
-		{
-			let session = AVAudioSession.sharedInstance()
-			try session.setPreferredSampleRate(session.sampleRate)
-			try session.setCategory(AVAudioSessionCategoryPlayback, withOptions: AVAudioSessionCategoryOptions.MixWithOthers)
-			try session.setActive(true)
-	
-		}
-		catch
-		{
-			print("FAILS")
-		}
-	}
-	
-	func startStopGraphAsRequired()
-	{
-		if (connectedInstrument != nil)
-		{
-			self.startAUGraph()
-		}
-		else
-		{
-			self.stopAUGraph()
-		}
-	}
-	
-	func startAUGraph()
-	{
-		if (!graphStarted)
-		{
-			self.startAudioSession()
-			
-			var outIsInit:DarwinBoolean = false
-			AUGraphIsInitialized(audioGraph, &outIsInit)
-			if (!outIsInit)
-			{
-				AUGraphInitialize(audioGraph)
-			}
-		}
-	}
-	
-	func stopAUGraph()
-	{
-		
-	}
-	
 	func createAUGraph()
 	{
 		var ioUnit:AudioUnit = nil
@@ -83,7 +35,7 @@ class ViewController: UIViewController
 		var connectedEffect:Bool
 		var newAudioGraph:AUGraph = nil
 		
-		let stat = NewAUGraph(UnsafeMutablePointer<AUGraph>(newAudioGraph))
+		let stat = NewAUGraph(&newAudioGraph)
 	
 		if stat == noErr
 		{
@@ -134,6 +86,53 @@ class ViewController: UIViewController
 		}
 	}
 	
+	func startAudioSession()
+	{
+		do
+		{
+			let session = AVAudioSession.sharedInstance()
+			try session.setPreferredSampleRate(session.sampleRate)
+			try session.setCategory(AVAudioSessionCategoryPlayback, withOptions: AVAudioSessionCategoryOptions.MixWithOthers)
+			try session.setActive(true)
+			
+		}
+		catch
+		{
+			print("FAILS")
+		}
+	}
+	
+	func startStopGraphAsRequired()
+	{
+		if (connectedInstrument != nil)
+		{
+			self.startAUGraph()
+		}
+		else
+		{
+			self.stopAUGraph()
+		}
+	}
+	
+	func startAUGraph()
+	{
+		if (!graphStarted)
+		{
+			self.startAudioSession()
+			
+			var outIsInit:DarwinBoolean = false
+			AUGraphIsInitialized(audioGraph, &outIsInit)
+			if (!outIsInit)
+			{
+				AUGraphInitialize(audioGraph)
+			}
+		}
+	}
+	
+	func stopAUGraph()
+	{
+		
+	}
 	
 	override func didReceiveMemoryWarning()
 	{
