@@ -12,6 +12,9 @@ import AVFoundation
 
 class ViewController: UIViewController
 {
+	var connectedInstrument:Bool?
+	var graphStarted:Bool = false
+	var audioGraph:AUGraph = nil
 
 	
 	override func viewDidLoad()
@@ -21,61 +24,114 @@ class ViewController: UIViewController
 		// Do any additional setup after loading the view, typically from a nib.
 	}
 
+	func startAudioSession()
+	{
+		do
+		{
+			let session = AVAudioSession.sharedInstance()
+			try session.setPreferredSampleRate(session.sampleRate)
+			try session.setCategory(AVAudioSessionCategoryPlayback, withOptions: AVAudioSessionCategoryOptions.MixWithOthers)
+			try session.setActive(true)
+	
+		}
+		catch
+		{
+			print("FAILS")
+		}
+	}
+	
+	func startStopGraphAsRequired()
+	{
+		if (connectedInstrument != nil)
+		{
+			self.startAUGraph()
+		}
+		else
+		{
+			self.stopAUGraph()
+		}
+	}
+	
+	func startAUGraph()
+	{
+		if (!graphStarted)
+		{
+			self.startAudioSession()
+			
+			var outIsInit:DarwinBoolean = false
+			AUGraphIsInitialized(audioGraph, &outIsInit)
+			if (!outIsInit)
+			{
+				AUGraphInitialize(audioGraph)
+			}
+		}
+	}
+	
+	func stopAUGraph()
+	{
+		
+	}
+	
 	func createAUGraph()
 	{
-		var audioGraph:AUGraph = nil
 		var ioUnit:AudioUnit = nil
 		var instrumentUnit:AudioUnit
 		var effectUnit:AudioUnit
 		var ioNode:AUNode = 0
 		var instrumentNode:AUNode = 0
 		var effectNode:AUNode = 0
-		var graphStarted:Bool
-		var connectedInstrument:Bool
 		var connectedEffect:Bool
-
+		var newAudioGraph:AUGraph = nil
 		
-		let stat = NewAUGraph(UnsafeMutablePointer<AUGraph>(audioGraph))
+		let stat = NewAUGraph(UnsafeMutablePointer<AUGraph>(newAudioGraph))
 	
-		var ioUnitDescription = AudioComponentDescription(componentType: kAudioUnitType_Output,
-		                                                  componentSubType: kAudioUnitSubType_RemoteIO,
-		                                                  componentManufacturer: kAudioUnitManufacturer_Apple,
-		                                                  componentFlags: 0,
-		                                                  componentFlagsMask: 0)
-		AUGraphAddNode(audioGraph, &ioUnitDescription, &ioNode)
-		
-		AUGraphOpen(audioGraph)
-		AUGraphNodeInfo(audioGraph,
-		                ioNode,
-		                nil,
-		                &ioUnit)
-		
-		var session = AVAudioSession.sharedInstance()
-		var format = AudioStreamBasicDescription()
-		format.mSampleRate = session.sampleRate
-		format.mFormatID = kAudioFormatLinearPCM
-		format.mFormatFlags = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved
-		format.mBytesPerPacket = 4
-		format.mFramesPerPacket = 1
-		format.mBytesPerFrame = 4
-		format.mChannelsPerFrame = 2
-		format.mBitsPerChannel = 32
-		
-		AudioUnitSetProperty(ioUnit,
-		                     kAudioUnitProperty_StreamFormat,
-		                     kAudioUnitScope_Output,
-		                     1,
-		                     &format,
-		                     UInt32(sizeof(AudioStreamBasicDescription)))
-
-		AudioUnitSetProperty(ioUnit,
-		                     kAudioUnitProperty_StreamFormat,
-		                     kAudioUnitScope_Input,
-		                     0,
-		                     &format,
-		                     UInt32(sizeof(AudioStreamBasicDescription)))
-
-		CAShow(UnsafeMutablePointer<AUGraph>(audioGraph))
+		if stat == noErr
+		{
+			var ioUnitDescription = AudioComponentDescription(componentType: kAudioUnitType_Output,
+			                                                  componentSubType: kAudioUnitSubType_RemoteIO,
+			                                                  componentManufacturer: kAudioUnitManufacturer_Apple,
+			                                                  componentFlags: 0,
+			                                                  componentFlagsMask: 0)
+			AUGraphAddNode(newAudioGraph, &ioUnitDescription, &ioNode)
+			
+			AUGraphOpen(newAudioGraph)
+			AUGraphNodeInfo(audioGraph,
+			                ioNode,
+			                nil,
+			                &ioUnit)
+			
+			var session = AVAudioSession.sharedInstance()
+			var format = AudioStreamBasicDescription()
+			format.mSampleRate = session.sampleRate
+			format.mFormatID = kAudioFormatLinearPCM
+			format.mFormatFlags = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved
+			format.mBytesPerPacket = 4
+			format.mFramesPerPacket = 1
+			format.mBytesPerFrame = 4
+			format.mChannelsPerFrame = 2
+			format.mBitsPerChannel = 32
+			
+			AudioUnitSetProperty(ioUnit,
+			                     kAudioUnitProperty_StreamFormat,
+			                     kAudioUnitScope_Output,
+			                     1,
+			                     &format,
+			                     UInt32(sizeof(AudioStreamBasicDescription)))
+			
+			AudioUnitSetProperty(ioUnit,
+			                     kAudioUnitProperty_StreamFormat,
+			                     kAudioUnitScope_Input,
+			                     0,
+			                     &format,
+			                     UInt32(sizeof(AudioStreamBasicDescription)))
+			
+			CAShow(UnsafeMutablePointer<AUGraph>(newAudioGraph))
+			
+		}
+		else
+		{
+			print ("Err: ", stat)
+		}
 	}
 	
 	
