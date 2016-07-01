@@ -13,6 +13,7 @@
 		C0348C661D24F30E009685A3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C0348C651D24F30E009685A3 /* Assets.xcassets */; };
 		C0348C691D24F30E009685A3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C0348C671D24F30E009685A3 /* LaunchScreen.storyboard */; };
 		C0348C711D263BB5009685A3 /* InterAppAudioUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0348C701D263BB5009685A3 /* InterAppAudioUnit.swift */; };
+		C0348C731D263D7B009685A3 /* SelectIAAUViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0348C721D263D7B009685A3 /* SelectIAAUViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		C0348C681D24F30E009685A3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C0348C6A1D24F30E009685A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C0348C701D263BB5009685A3 /* InterAppAudioUnit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterAppAudioUnit.swift; sourceTree = "<group>"; };
+		C0348C721D263D7B009685A3 /* SelectIAAUViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectIAAUViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,12 +59,13 @@
 			isa = PBXGroup;
 			children = (
 				C0348C5E1D24F30E009685A3 /* AppDelegate.swift */,
+				C0348C701D263BB5009685A3 /* InterAppAudioUnit.swift */,
 				C0348C601D24F30E009685A3 /* ViewController.swift */,
 				C0348C621D24F30E009685A3 /* Main.storyboard */,
 				C0348C651D24F30E009685A3 /* Assets.xcassets */,
 				C0348C671D24F30E009685A3 /* LaunchScreen.storyboard */,
 				C0348C6A1D24F30E009685A3 /* Info.plist */,
-				C0348C701D263BB5009685A3 /* InterAppAudioUnit.swift */,
+				C0348C721D263D7B009685A3 /* SelectIAAUViewController.swift */,
 			);
 			path = AudioHost;
 			sourceTree = "<group>";
@@ -139,6 +142,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0348C731D263D7B009685A3 /* SelectIAAUViewController.swift in Sources */,
 				C0348C611D24F30E009685A3 /* ViewController.swift in Sources */,
 				C0348C5F1D24F30E009685A3 /* AppDelegate.swift in Sources */,
 				C0348C711D263BB5009685A3 /* InterAppAudioUnit.swift in Sources */,
