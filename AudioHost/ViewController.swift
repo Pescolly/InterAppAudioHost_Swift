@@ -126,12 +126,26 @@ class ViewController: UIViewController
 			{
 				AUGraphInitialize(audioGraph)
 			}
+			
+			AUGraphStart(audioGraph)
+			graphStarted = true
 		}
 	}
 	
 	func stopAUGraph()
 	{
-		
+		if graphStarted && audioGraph != nil
+		{
+			AUGraphStop(audioGraph)
+			var outIsInit:DarwinBoolean = false
+			AUGraphIsInitialized(audioGraph, &outIsInit)
+			if outIsInit
+			{
+				AUGraphUninitialize(audioGraph)
+			}
+			
+			graphStarted = false
+		}
 	}
 	
 	override func didReceiveMemoryWarning()
