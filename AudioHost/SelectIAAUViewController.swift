@@ -26,13 +26,38 @@ class SelectIAAUViewController: UITableViewController
 	{
         super.viewDidLoad()
 
-        // Uncomment the following line to preserve selection between presentations
+		self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel",
+		                                                        style: .Plain,
+		                                                        target: self,
+		                                                        action: "closeTapped")
+		
+		self.tableView .registerClass(UITableViewCell.classForCoder(), forCellReuseIdentifier: "Cell")
+		
+		self.refreshList()
+		
+		// Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
 
+	func closeTapped(sender: AnyObject)
+	{
+		self.delegate?.selectIAAUViewControllerWantsToClose(self)
+	}
+	
+	init (description:AudioComponentDescription)
+	{
+		super.init(style: UITableViewStyle.Plain)
+		self.searchDesc = description
+	}
+	
+	required init?(coder aDecoder: NSCoder)
+	{
+		fatalError("init(coder:) has not been implemented")
+	}
+	
 	func refreshList()
 	{
 		let unitss = NSMutableArray()
@@ -74,27 +99,36 @@ class SelectIAAUViewController: UITableViewController
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int
 	{
         // #warning Incomplete implementation, return the number of sections
-        return 0
+        return 1
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int
 	{
         // #warning Incomplete implementation, return the number of rows
-        return 0
+        return units.count
     }
 
 
 	
 	
-    /*
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("reuseIdentifier", forIndexPath: indexPath)
+	
+    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell 
+	{
+        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
 
-        // Configure the cell...
-
+		let unit:InterAppAudioUnit = self.units[indexPath.row] as! InterAppAudioUnit
+		cell.imageView?.image = unit.icon
+		cell.textLabel?.text = unit.name
+		
         return cell
     }
-    */
+	
+	override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath)
+	{
+		let unit = self.units[indexPath.row]
+		delegate?.selectIAAUViewController(self, didSelectUnit: unit as! InterAppAudioUnit)
+	}
+	
 
     /*
     // Override to support conditional editing of the table view.
