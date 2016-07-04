@@ -19,7 +19,7 @@ protocol SelectIAAUViewControllerDelegate
 class SelectIAAUViewController: UITableViewController
 {
 	var delegate:SelectIAAUViewControllerDelegate?
-	var searchDesc:AudioComponentDescription = AudioComponentDescription()
+	var searchDescription:AudioComponentDescription = AudioComponentDescription()
 	var units:NSArray = NSArray()
 	
     override func viewDidLoad()
@@ -50,7 +50,7 @@ class SelectIAAUViewController: UITableViewController
 	init (description:AudioComponentDescription)
 	{
 		super.init(style: UITableViewStyle.Plain)
-		self.searchDesc = description
+		self.searchDescription = description
 	}
 	
 	required init?(coder aDecoder: NSCoder)
@@ -61,37 +61,42 @@ class SelectIAAUViewController: UITableViewController
 	func refreshList()
 	{
 		let unitss = NSMutableArray()
-		var desc:AudioComponentDescription = AudioComponentDescription(componentType: 0, componentSubType: 0, componentManufacturer: 0, componentFlags: 0, componentFlagsMask: 0)
 		var component:AudioComponent = nil
-		component = AudioComponentFindNext(component, &desc)
-		var i = 0
-		while (i < 10)// != nil)
+		while (true)
 		{
-			//			var desc:AudioComponentDescription = AudioComponentDescription()
-			let err = AudioComponentGetDescription(component, &self.searchDesc)
-			
-			if err != noErr
+
+			component = AudioComponentFindNext(component, &self.searchDescription)
+			if component == nil
 			{
-				print("Err in refresh list")
-				continue
+				break;
 			}
 			
-			let unit:InterAppAudioUnit = InterAppAudioUnit()
-			unit.compDescription = desc
-			unit.icon = AudioComponentGetIcon(component, 44.0)
-		
-			var name:Unmanaged<CFString>?
-			let stat = AudioComponentCopyName(component, &name)
-			
-			if (name != nil)
+			var desc:AudioComponentDescription = AudioComponentDescription()
+			let err = AudioComponentGetDescription(component, &desc)
+			if (desc.componentType == kAudioUnitType_RemoteInstrument ||
+			desc.componentType == kAudioUnitType_RemoteGenerator )
 			{
-				//	let nameString:String = name!.toOpaque() as! CFStringRef as String
-				unit.name = name.debugDescription
-				unitss.addObject(unit)
+				if err != noErr
+				{
+					print("Err in refresh list")
+					continue
+				}
+				
+				let unit:InterAppAudioUnit = InterAppAudioUnit()
+				unit.compDescription = desc
+				unit.icon = AudioComponentGetIcon(component, 44.0)
+				
+				
+				var name:Unmanaged<CFString>?
+				let stat = AudioComponentCopyName(component, &name)
+				
+				if (name != nil)
+				{
+					//	let nameString:String = name!.toOpaque() as! CFStringRef as String
+					unit.name = name.debugDescription
+					unitss.addObject(unit)
+				}
 			}
-			
-			AudioComponentFindNext(component, &self.searchDesc)
-		i++
 		}
 		
 		self.units = unitss

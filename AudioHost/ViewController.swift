@@ -163,7 +163,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	
 	@IBAction func selectInstrument(sender : AnyObject)
 	{
-		let description : AudioComponentDescription = AudioComponentDescription(componentType: kAudioUnitType_RemoteGenerator | kAudioUnitType_RemoteInstrument,
+		let description : AudioComponentDescription = AudioComponentDescription(componentType: kAudioUnitType_RemoteInstrument,
 		                                                                        componentSubType: 0,
 		                                                                        componentManufacturer: 0,
 		                                                                        componentFlags: 0,
