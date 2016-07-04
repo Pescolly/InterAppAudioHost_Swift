@@ -10,12 +10,13 @@ import UIKit
 import AudioUnit
 import AVFoundation
 
-class ViewController: UIViewController
+class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 {
 	var connectedInstrument:Bool?
 	var graphStarted:Bool = false
 	var audioGraph:AUGraph = nil
-
+	var _instrumentSelectViewController:SelectIAAUViewController?
+	var _effectSelectViewController:SelectIAAUViewController?
 	
 	override func viewDidLoad()
 	{
@@ -24,6 +25,18 @@ class ViewController: UIViewController
 		// Do any additional setup after loading the view, typically from a nib.
 	}
 
+	//protocols
+	func selectIAAUViewController(viewController:SelectIAAUViewController, didSelectUnit audioUnit:InterAppAudioUnit)
+	{
+		self.dismissViewControllerAnimated(true, completion: nil)
+	}
+	
+	func selectIAAUViewControllerWantsToClose(viewController: SelectIAAUViewController)
+	{
+		self.dismissViewControllerAnimated(true, completion: nil)
+	}
+	
+	//funcs
 	func createAUGraph()
 	{
 		var ioUnit:AudioUnit = nil
@@ -146,6 +159,36 @@ class ViewController: UIViewController
 			
 			graphStarted = false
 		}
+	}
+	
+	@IBAction func selectInstrument(sender : AnyObject)
+	{
+		let description : AudioComponentDescription = AudioComponentDescription(componentType: kAudioUnitType_RemoteInstrument,
+		                                                                        componentSubType: 0,
+		                                                                        componentManufacturer: 0,
+		                                                                        componentFlags: 0,
+		                                                                        componentFlagsMask: 0)
+			
+		_instrumentSelectViewController = SelectIAAUViewController(description: description)
+		_instrumentSelectViewController?.delegate = self
+		
+		let navController:UINavigationController = UINavigationController(rootViewController: _instrumentSelectViewController!)
+		self.presentViewController(navController, animated: true, completion: nil)
+	}
+
+	@IBAction func selectEffect(sender : AnyObject)
+	{
+		let description : AudioComponentDescription = AudioComponentDescription(componentType: kAudioUnitType_RemoteEffect,
+		                                                                        componentSubType: 0,
+		                                                                        componentManufacturer: 0,
+		                                                                        componentFlags: 0,
+		                                                                        componentFlagsMask: 0)
+		
+		_effectSelectViewController = SelectIAAUViewController(description: description)
+		_effectSelectViewController?.delegate = self
+		
+		let navController:UINavigationController = UINavigationController(rootViewController: _effectSelectViewController!)
+		self.presentViewController(navController, animated: true, completion: nil)
 	}
 	
 	override func didReceiveMemoryWarning()
