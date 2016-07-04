@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C00D4FE61D2A4373001E131E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00D4FE51D2A4373001E131E /* AudioToolbox.framework */; };
 		C0348C5F1D24F30E009685A3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0348C5E1D24F30E009685A3 /* AppDelegate.swift */; };
 		C0348C611D24F30E009685A3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0348C601D24F30E009685A3 /* ViewController.swift */; };
 		C0348C641D24F30E009685A3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C0348C621D24F30E009685A3 /* Main.storyboard */; };
@@ -17,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C00D4FE51D2A4373001E131E /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		C00D4FE71D2A4373001E131E /* AudioHost.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = AudioHost.entitlements; sourceTree = "<group>"; };
 		C0348C5B1D24F30E009685A3 /* AudioHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0348C5E1D24F30E009685A3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C0348C601D24F30E009685A3 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -33,6 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C00D4FE61D2A4373001E131E /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +46,7 @@
 		C0348C521D24F30E009685A3 = {
 			isa = PBXGroup;
 			children = (
+				C00D4FE51D2A4373001E131E /* AudioToolbox.framework */,
 				C0348C5D1D24F30E009685A3 /* AudioHost */,
 				C0348C5C1D24F30E009685A3 /* Products */,
 			);
@@ -58,6 +63,7 @@
 		C0348C5D1D24F30E009685A3 /* AudioHost */ = {
 			isa = PBXGroup;
 			children = (
+				C00D4FE71D2A4373001E131E /* AudioHost.entitlements */,
 				C0348C5E1D24F30E009685A3 /* AppDelegate.swift */,
 				C0348C701D263BB5009685A3 /* InterAppAudioUnit.swift */,
 				C0348C601D24F30E009685A3 /* ViewController.swift */,
@@ -103,6 +109,14 @@
 					C0348C5A1D24F30E009685A3 = {
 						CreatedOnToolsVersion = 7.3.1;
 						DevelopmentTeam = 4R4KDM9Y6W;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.InterAppAudio = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -260,6 +274,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AudioHost/AudioHost.entitlements;
 				INFOPLIST_FILE = AudioHost/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "greypool-audio.AudioHost";
@@ -271,6 +286,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AudioHost/AudioHost.entitlements;
 				INFOPLIST_FILE = AudioHost/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "greypool-audio.AudioHost";
@@ -297,6 +313,7 @@
 				C0348C6F1D24F30E009685A3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

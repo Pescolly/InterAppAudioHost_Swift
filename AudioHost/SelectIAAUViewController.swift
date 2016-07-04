@@ -61,15 +61,18 @@ class SelectIAAUViewController: UITableViewController
 	func refreshList()
 	{
 		let unitss = NSMutableArray()
-		let component:AudioComponent = nil
-		AudioComponentFindNext(component, &self.searchDesc)
-		while (component != nil)
+		var desc:AudioComponentDescription = AudioComponentDescription(componentType: 0, componentSubType: 0, componentManufacturer: 0, componentFlags: 0, componentFlagsMask: 0)
+		var component:AudioComponent = nil
+		component = AudioComponentFindNext(component, &desc)
+		var i = 0
+		while (i < 10)// != nil)
 		{
-			var desc:AudioComponentDescription = AudioComponentDescription()
-			let err = AudioComponentGetDescription(component, &desc)
+			//			var desc:AudioComponentDescription = AudioComponentDescription()
+			let err = AudioComponentGetDescription(component, &self.searchDesc)
 			
 			if err != noErr
 			{
+				print("Err in refresh list")
 				continue
 			}
 			
@@ -78,11 +81,17 @@ class SelectIAAUViewController: UITableViewController
 			unit.icon = AudioComponentGetIcon(component, 44.0)
 		
 			var name:Unmanaged<CFString>?
-			AudioComponentCopyName(component, &name)
-			unit.name = name as! String
-			unitss.addObject(unit)
+			let stat = AudioComponentCopyName(component, &name)
+			
+			if (name != nil)
+			{
+				//	let nameString:String = name!.toOpaque() as! CFStringRef as String
+				unit.name = name.debugDescription
+				unitss.addObject(unit)
+			}
 			
 			AudioComponentFindNext(component, &self.searchDesc)
+		i++
 		}
 		
 		self.units = unitss
