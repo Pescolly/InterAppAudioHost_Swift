@@ -29,7 +29,7 @@ class SelectIAAUViewController: UITableViewController
 		self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel",
 		                                                        style: .Plain,
 		                                                        target: self,
-		                                                        action: "closeTapped")
+		                                                        action: "closeTapped:")
 		
 		self.tableView .registerClass(UITableViewCell.classForCoder(), forCellReuseIdentifier: "Cell")
 		
@@ -94,7 +94,6 @@ class SelectIAAUViewController: UITableViewController
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
 	
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int
 	{
@@ -107,10 +106,6 @@ class SelectIAAUViewController: UITableViewController
         // #warning Incomplete implementation, return the number of rows
         return units.count
     }
-
-
-	
-	
 	
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell 
 	{
