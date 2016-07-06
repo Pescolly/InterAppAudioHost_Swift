@@ -13,6 +13,13 @@ import AVFoundation
 class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 {
 	var connectedInstrument:Bool?
+	var instrumentUnit:AudioUnit?
+	var instrumentNode:AUNode?
+	var effectNode:AUNode?
+	var connectedEffect:Bool?
+	var effectUnit:AudioUnit?
+	var ioNode:AUNode?
+
 	var graphStarted:Bool = false
 	var audioGraph:AUGraph = nil
 	var _instrumentSelectViewController:SelectIAAUViewController?
@@ -40,12 +47,6 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	func createAUGraph()
 	{
 		var ioUnit:AudioUnit = nil
-		var instrumentUnit:AudioUnit
-		var effectUnit:AudioUnit
-		var ioNode:AUNode = 0
-		var instrumentNode:AUNode = 0
-		var effectNode:AUNode = 0
-		var connectedEffect:Bool
 		var newAudioGraph:AUGraph = nil
 		
 		let stat = NewAUGraph(&newAudioGraph)
@@ -189,6 +190,48 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		
 		let navController:UINavigationController = UINavigationController(rootViewController: _effectSelectViewController!)
 		self.presentViewController(navController, animated: true, completion: nil)
+	}
+	
+	func connectInstrument(unit : InterAppAudioUnit)
+	{
+		self.stopAUGraph()
+		
+		var newInstrumentNode:AUNode
+		var desc = unit.compDescription
+		AUGraphAddNode(self.audioGraph, &desc, &newInstrumentNode)
+		
+		if newInstrumentNode != nil
+		{
+			if self.instrument != nil
+			{
+				AUGraphDisconnectNodeInput(self.audioGraph, self.instrumentNode, 0)
+				AUGraphRemoveNode(self.audioGraph, self.instrumentNode)
+				
+				self.instrumentUnit = nil
+			}
+			
+			self.instrumentNode = newInstrumentNode
+			
+			AUGraphNodeInfo(self.audioGraph, self.instrumentNode, 0, &self.instrumentUnit)
+			
+			if (self.effectNode != nil)
+			{
+				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode, 0, self.effectNode, 0)
+			}
+			else
+			{
+				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode, 0, self.ioNode, 0)
+			}
+			
+			self.connectedInstrument = true
+			instrumentIconImageView.image = unit.icon
+		}
+		else
+		{
+			self.startStopGraphAsRequired()
+			CAShow(self.audioGraph)
+		}
+		
 	}
 	
 	override func didReceiveMemoryWarning()
