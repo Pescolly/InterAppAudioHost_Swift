@@ -20,6 +20,10 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	var effectUnit:AudioUnit?
 	var ioNode:AUNode?
 
+	@IBOutlet var instrumentIconImageView:UIImageView?
+	@IBOutlet var effectIconImageView:UIImageView?
+
+	
 	var graphStarted:Bool = false
 	var audioGraph:AUGraph = nil
 	var _instrumentSelectViewController:SelectIAAUViewController?
@@ -58,11 +62,11 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			                                                  componentManufacturer: kAudioUnitManufacturer_Apple,
 			                                                  componentFlags: 0,
 			                                                  componentFlagsMask: 0)
-			AUGraphAddNode(newAudioGraph, &ioUnitDescription, &ioNode)
+			AUGraphAddNode(newAudioGraph, &ioUnitDescription, &ioNode!)
 			
 			AUGraphOpen(newAudioGraph)
 			AUGraphNodeInfo(audioGraph,
-			                ioNode,
+			                ioNode!,
 			                nil,
 			                &ioUnit)
 			
@@ -196,40 +200,40 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	{
 		self.stopAUGraph()
 		
-		var newInstrumentNode:AUNode
+		var newInstrumentNode:AUNode?
 		var desc = unit.compDescription
-		AUGraphAddNode(self.audioGraph, &desc, &newInstrumentNode)
+		AUGraphAddNode(self.audioGraph, &desc!, &newInstrumentNode!)
 		
 		if newInstrumentNode != nil
 		{
-			if self.instrument != nil
+			if self.instrumentNode != nil
 			{
-				AUGraphDisconnectNodeInput(self.audioGraph, self.instrumentNode, 0)
-				AUGraphRemoveNode(self.audioGraph, self.instrumentNode)
+				AUGraphDisconnectNodeInput(self.audioGraph, self.instrumentNode!, 0)
+				AUGraphRemoveNode(self.audioGraph, self.instrumentNode!)
 				
 				self.instrumentUnit = nil
 			}
 			
 			self.instrumentNode = newInstrumentNode
 			
-			AUGraphNodeInfo(self.audioGraph, self.instrumentNode, 0, &self.instrumentUnit)
+			AUGraphNodeInfo(self.audioGraph, self.instrumentNode!, nil, &self.instrumentUnit!)
 			
 			if (self.effectNode != nil)
 			{
-				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode, 0, self.effectNode, 0)
+				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode!, 0, self.effectNode!, 0)
 			}
 			else
 			{
-				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode, 0, self.ioNode, 0)
+				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode!, 0, self.ioNode!, 0)
 			}
 			
 			self.connectedInstrument = true
-			instrumentIconImageView.image = unit.icon
+			self.instrumentIconImageView!.image = unit.icon
 		}
 		else
 		{
 			self.startStopGraphAsRequired()
-			CAShow(self.audioGraph)
+			CAShow(&self.audioGraph)
 		}
 		
 	}

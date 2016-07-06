@@ -48,6 +48,10 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
+                    <connections>
+                        <outlet property="effectIconImageView" destination="oXI-7K-WBg" id="nQE-ef-m6T"/>
+                        <outlet property="instrumentIconImageView" destination="dce-Hj-sbr" id="nzh-dN-9Xf"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
                 <tapGestureRecognizer id="AhL-qT-XiB">
