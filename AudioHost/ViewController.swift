@@ -19,6 +19,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	var connectedEffect:Bool?
 	var effectUnit:AudioUnit?
 	var ioNode:AUNode?
+	var ioUnit:AudioUnit?
 
 	@IBOutlet var instrumentIconImageView:UIImageView?
 	@IBOutlet var effectIconImageView:UIImageView?
@@ -50,9 +51,9 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	//funcs
 	func createAUGraph()
 	{
-		var ioUnit:AudioUnit = nil
 		var newAudioGraph:AUGraph = nil
-		
+		var thisNode:AUNode = AUNode()
+		var thisUnit:AudioUnit = nil
 		let stat = NewAUGraph(&newAudioGraph)
 	
 		if stat == noErr
@@ -62,15 +63,12 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			                                                  componentManufacturer: kAudioUnitManufacturer_Apple,
 			                                                  componentFlags: 0,
 			                                                  componentFlagsMask: 0)
-			AUGraphAddNode(newAudioGraph, &ioUnitDescription, &ioNode!)
+			AUGraphAddNode(newAudioGraph, &ioUnitDescription, &thisNode)
 			
 			AUGraphOpen(newAudioGraph)
-			AUGraphNodeInfo(audioGraph,
-			                ioNode!,
-			                nil,
-			                &ioUnit)
+			//			AUGraphNodeInfo(newAudioGraph, thisNode, nil, &thisUnit)
 			
-			var session = AVAudioSession.sharedInstance()
+			let session = AVAudioSession.sharedInstance()
 			var format = AudioStreamBasicDescription()
 			format.mSampleRate = session.sampleRate
 			format.mFormatID = kAudioFormatLinearPCM
@@ -81,14 +79,14 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			format.mChannelsPerFrame = 2
 			format.mBitsPerChannel = 32
 			
-			AudioUnitSetProperty(ioUnit,
+			AudioUnitSetProperty(thisUnit,
 			                     kAudioUnitProperty_StreamFormat,
 			                     kAudioUnitScope_Output,
 			                     1,
 			                     &format,
 			                     UInt32(sizeof(AudioStreamBasicDescription)))
 			
-			AudioUnitSetProperty(ioUnit,
+			AudioUnitSetProperty(thisUnit,
 			                     kAudioUnitProperty_StreamFormat,
 			                     kAudioUnitScope_Input,
 			                     0,
