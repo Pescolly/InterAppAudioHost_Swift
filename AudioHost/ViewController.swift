@@ -66,7 +66,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			AUGraphAddNode(newAudioGraph, &ioUnitDescription, &thisNode)
 			
 			AUGraphOpen(newAudioGraph)
-			//			AUGraphNodeInfo(newAudioGraph, thisNode, nil, &thisUnit)
+			AUGraphNodeInfo(newAudioGraph, thisNode, nil, &thisUnit)
 			
 			let session = AVAudioSession.sharedInstance()
 			var format = AudioStreamBasicDescription()
