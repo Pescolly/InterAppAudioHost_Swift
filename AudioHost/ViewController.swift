@@ -20,7 +20,8 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	var effectUnit:AudioUnit?
 	var ioNode:AUNode?
 	var ioUnit:AudioUnit?
-
+	var newAudioGraph:AUGraph = nil
+	
 	@IBOutlet var instrumentIconImageView:UIImageView?
 	@IBOutlet var effectIconImageView:UIImageView?
 
@@ -41,6 +42,14 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	func selectIAAUViewController(viewController:SelectIAAUViewController, didSelectUnit audioUnit:InterAppAudioUnit)
 	{
 		self.dismissViewControllerAnimated(true, completion: nil)
+		if (viewController == _instrumentSelectViewController)
+		{
+			self.connectInstrument(audioUnit)
+		}
+		else if (viewController == _effectSelectViewController)
+		{
+			self.connectEffect(audioUnit)
+		}
 	}
 	
 	func selectIAAUViewControllerWantsToClose(viewController: SelectIAAUViewController)
@@ -51,10 +60,9 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	//funcs
 	func createAUGraph()
 	{
-		var newAudioGraph:AUGraph = nil
 		var thisNode:AUNode = AUNode()
 		var thisUnit:AudioUnit = nil
-		let stat = NewAUGraph(&newAudioGraph)
+		let stat = NewAUGraph(&self.newAudioGraph)
 	
 		if stat == noErr
 		{
@@ -63,10 +71,10 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			                                                  componentManufacturer: kAudioUnitManufacturer_Apple,
 			                                                  componentFlags: 0,
 			                                                  componentFlagsMask: 0)
-			AUGraphAddNode(newAudioGraph, &ioUnitDescription, &thisNode)
+			AUGraphAddNode(self.newAudioGraph, &ioUnitDescription, &thisNode)
 			
-			AUGraphOpen(newAudioGraph)
-			AUGraphNodeInfo(newAudioGraph, thisNode, nil, &thisUnit)
+			AUGraphOpen(self.newAudioGraph)
+			AUGraphNodeInfo(self.newAudioGraph, thisNode, nil, &thisUnit)
 			
 			let session = AVAudioSession.sharedInstance()
 			var format = AudioStreamBasicDescription()
@@ -93,7 +101,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			                     &format,
 			                     UInt32(sizeof(AudioStreamBasicDescription)))
 			
-			CAShow(UnsafeMutablePointer<AUGraph>(newAudioGraph))
+			CAShow(UnsafeMutablePointer<AUGraph>(self.newAudioGraph))
 			
 		}
 		else
@@ -172,10 +180,10 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		                                                                        componentFlags: 0,
 		                                                                        componentFlagsMask: 0)
 			
-		_instrumentSelectViewController = SelectIAAUViewController(description: description)
-		_instrumentSelectViewController?.delegate = self
+		self._instrumentSelectViewController = SelectIAAUViewController(withSearchDescription: description)
+		self._instrumentSelectViewController?.delegate = self
 		
-		let navController:UINavigationController = UINavigationController(rootViewController: _instrumentSelectViewController!)
+		let navController:UINavigationController = UINavigationController(rootViewController: self._instrumentSelectViewController!)
 		self.presentViewController(navController, animated: true, completion: nil)
 	}
 
@@ -187,11 +195,25 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		                                                                        componentFlags: 0,
 		                                                                        componentFlagsMask: 0)
 		
-		_effectSelectViewController = SelectIAAUViewController(description: description)
+		_effectSelectViewController = SelectIAAUViewController(withSearchDescription: description)
 		_effectSelectViewController?.delegate = self
 		
 		let navController:UINavigationController = UINavigationController(rootViewController: _effectSelectViewController!)
 		self.presentViewController(navController, animated: true, completion: nil)
+	}
+	
+	func connectEffect(audioUnit : InterAppAudioUnit)
+	{
+		if !connectedInstrument!
+		{
+			let alert = UIAlertView(title: "ERROR",
+			                        message: "You need to select instrument first",
+			                        delegate: nil,
+			                        cancelButtonTitle: nil,
+			                        otherButtonTitles: "OK",
+			                        "")
+			alert.show()
+		}
 	}
 	
 	func connectInstrument(unit : InterAppAudioUnit)

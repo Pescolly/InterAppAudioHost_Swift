@@ -47,10 +47,10 @@ class SelectIAAUViewController: UITableViewController
 		self.delegate?.selectIAAUViewControllerWantsToClose(self)
 	}
 	
-	init (description:AudioComponentDescription)
+	init (withSearchDescription:AudioComponentDescription)
 	{
 		super.init(style: UITableViewStyle.Plain)
-		self.searchDescription = description
+		self.searchDescription = withSearchDescription
 	}
 	
 	required init?(coder aDecoder: NSCoder)
