@@ -13,17 +13,17 @@ import AVFoundation
 class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 {
 	var connectedInstrument:Bool?
-	var instrumentUnit:AudioUnit?
-	var instrumentNode:AUNode?
+	var instrumentUnit:AudioUnit = nil
+	var instrumentNode:AUNode = AUNode()
 	var effectNode:AUNode?
 	var connectedEffect:Bool?
 	var effectUnit:AudioUnit?
 	var ioNode = AUNode()
-	var ioUnit:AudioUnit = AudioUnit()
+	var ioUnit:AudioUnit = nil
 	
 	@IBOutlet var instrumentIconImageView:UIImageView?
 	@IBOutlet var effectIconImageView:UIImageView?
-
+	
 	
 	var graphStarted:Bool = false
 	var audioGraph:AUGraph = nil
@@ -36,7 +36,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		createAUGraph()
 		// Do any additional setup after loading the view, typically from a nib.
 	}
-
+	
 	//protocols
 	func selectIAAUViewController(viewController:SelectIAAUViewController, didSelectUnit audioUnit:InterAppAudioUnit)
 	{
@@ -60,7 +60,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	func createAUGraph()
 	{
 		let stat = NewAUGraph(&self.audioGraph)
-	
+		
 		if stat == noErr
 		{
 			var ioUnitDescription = AudioComponentDescription(componentType: kAudioUnitType_Output,
@@ -100,7 +100,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			                     UInt32(sizeof(AudioStreamBasicDescription)))
 			
 			CAShow(UnsafeMutablePointer<AUGraph>(self.audioGraph))
-
+			
 			
 		}
 		else
@@ -178,14 +178,14 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		                                                                        componentManufacturer: 0,
 		                                                                        componentFlags: 0,
 		                                                                        componentFlagsMask: 0)
-			
+		
 		self._instrumentSelectViewController = SelectIAAUViewController(withSearchDescription: description)
 		self._instrumentSelectViewController?.delegate = self
 		
 		let navController:UINavigationController = UINavigationController(rootViewController: self._instrumentSelectViewController!)
 		self.presentViewController(navController, animated: true, completion: nil)
 	}
-
+	
 	@IBAction func selectEffect(sender : AnyObject)
 	{
 		let description : AudioComponentDescription = AudioComponentDescription(componentType: kAudioUnitType_RemoteEffect,
@@ -217,43 +217,40 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	
 	func connectInstrument(unit : InterAppAudioUnit)
 	{
+		print ("instrument selected")
+		
 		self.stopAUGraph()
 		
-		var newInstrumentNode:AUNode? = AUNode()
-		var desc = unit.compDescription
-		AUGraphAddNode(self.audioGraph, &desc!, &newInstrumentNode!)
+		var newInstrumentNode:AUNode = AUNode()
+		var desc:AudioComponentDescription = unit.compDescription!
+		AUGraphAddNode(self.audioGraph, &desc, &newInstrumentNode)
 		
-		if newInstrumentNode != nil
+		if self.instrumentNode != 0
 		{
-			if self.instrumentNode != nil
-			{
-				AUGraphDisconnectNodeInput(self.audioGraph, self.instrumentNode!, 0)
-				AUGraphRemoveNode(self.audioGraph, self.instrumentNode!)
-				
-				self.instrumentUnit = nil
-			}
-			
-			self.instrumentNode = newInstrumentNode
-			
-			//			AUGraphNodeInfo(self.audioGraph, self.instrumentNode!, nil, &self.instrumentUnit!)
-			
-			if (self.effectNode != nil)
-			{
-				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode!, 0, self.effectNode!, 0)
-			}
-			else
-			{
-				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode!, 0, self.ioNode, 0)
-			}
-			
-			self.connectedInstrument = true
-			self.instrumentIconImageView!.image = unit.icon
+			AUGraphDisconnectNodeInput(self.audioGraph, self.instrumentNode, 0)
+			AUGraphRemoveNode(self.audioGraph, self.instrumentNode)
+			self.instrumentIconImageView?.image = nil
+			self.instrumentUnit = nil
+		}
+		
+		self.instrumentNode = newInstrumentNode
+		
+		AUGraphNodeInfo(self.audioGraph, self.instrumentNode, nil, &self.instrumentUnit)
+		
+		if (self.effectNode != nil)
+		{
+			AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode, 0, self.effectNode!, 0)
 		}
 		else
 		{
-			self.startStopGraphAsRequired()
-			CAShow(&self.audioGraph)
+			AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode, 0, self.ioNode, 0)
 		}
+		
+		self.connectedInstrument = true
+		self.instrumentIconImageView!.image = unit.icon
+		
+		self.startStopGraphAsRequired()
+		CAShow(UnsafeMutablePointer<AUGraph>(self.audioGraph))
 		
 	}
 	
@@ -262,7 +259,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		super.didReceiveMemoryWarning()
 		// Dispose of any resources that can be recreated.
 	}
-
-
+	
+	
 }
 

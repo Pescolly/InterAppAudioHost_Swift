@@ -66,12 +66,12 @@
 				C00D4FE71D2A4373001E131E /* AudioHost.entitlements */,
 				C0348C5E1D24F30E009685A3 /* AppDelegate.swift */,
 				C0348C701D263BB5009685A3 /* InterAppAudioUnit.swift */,
+				C0348C721D263D7B009685A3 /* SelectIAAUViewController.swift */,
 				C0348C601D24F30E009685A3 /* ViewController.swift */,
 				C0348C621D24F30E009685A3 /* Main.storyboard */,
 				C0348C651D24F30E009685A3 /* Assets.xcassets */,
 				C0348C671D24F30E009685A3 /* LaunchScreen.storyboard */,
 				C0348C6A1D24F30E009685A3 /* Info.plist */,
-				C0348C721D263D7B009685A3 /* SelectIAAUViewController.swift */,
 			);
 			path = AudioHost;
 			sourceTree = "<group>";
@@ -275,6 +275,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = AudioHost/AudioHost.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Armen Karamian (44S7QUZYJ8)";
 				INFOPLIST_FILE = AudioHost/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "greypool-audio.AudioHost";
@@ -287,6 +288,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = AudioHost/AudioHost.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Armen Karamian (44S7QUZYJ8)";
 				INFOPLIST_FILE = AudioHost/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "greypool-audio.AudioHost";
