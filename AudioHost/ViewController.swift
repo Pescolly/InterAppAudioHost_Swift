@@ -18,9 +18,8 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	var effectNode:AUNode?
 	var connectedEffect:Bool?
 	var effectUnit:AudioUnit?
-	var ioNode:AUNode?
-	var ioUnit:AudioUnit?
-	var newAudioGraph:AUGraph = nil
+	var ioNode = AUNode()
+	var ioUnit:AudioUnit = AudioUnit()
 	
 	@IBOutlet var instrumentIconImageView:UIImageView?
 	@IBOutlet var effectIconImageView:UIImageView?
@@ -60,9 +59,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	//funcs
 	func createAUGraph()
 	{
-		var thisNode:AUNode = AUNode()
-		var thisUnit:AudioUnit = nil
-		let stat = NewAUGraph(&self.newAudioGraph)
+		let stat = NewAUGraph(&self.audioGraph)
 	
 		if stat == noErr
 		{
@@ -71,10 +68,11 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			                                                  componentManufacturer: kAudioUnitManufacturer_Apple,
 			                                                  componentFlags: 0,
 			                                                  componentFlagsMask: 0)
-			AUGraphAddNode(self.newAudioGraph, &ioUnitDescription, &thisNode)
+			AUGraphAddNode(self.audioGraph, &ioUnitDescription, &self.ioNode)
 			
-			AUGraphOpen(self.newAudioGraph)
-			AUGraphNodeInfo(self.newAudioGraph, thisNode, nil, &thisUnit)
+			AUGraphOpen(self.audioGraph)
+			
+			AUGraphNodeInfo(self.audioGraph, self.ioNode, nil, &self.ioUnit)
 			
 			let session = AVAudioSession.sharedInstance()
 			var format = AudioStreamBasicDescription()
@@ -87,21 +85,22 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			format.mChannelsPerFrame = 2
 			format.mBitsPerChannel = 32
 			
-			AudioUnitSetProperty(thisUnit,
+			AudioUnitSetProperty(self.ioUnit,
 			                     kAudioUnitProperty_StreamFormat,
 			                     kAudioUnitScope_Output,
 			                     1,
 			                     &format,
 			                     UInt32(sizeof(AudioStreamBasicDescription)))
 			
-			AudioUnitSetProperty(thisUnit,
+			AudioUnitSetProperty(self.ioUnit,
 			                     kAudioUnitProperty_StreamFormat,
 			                     kAudioUnitScope_Input,
 			                     0,
 			                     &format,
 			                     UInt32(sizeof(AudioStreamBasicDescription)))
 			
-			CAShow(UnsafeMutablePointer<AUGraph>(self.newAudioGraph))
+			CAShow(UnsafeMutablePointer<AUGraph>(self.audioGraph))
+
 			
 		}
 		else
@@ -220,7 +219,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	{
 		self.stopAUGraph()
 		
-		var newInstrumentNode:AUNode?
+		var newInstrumentNode:AUNode? = AUNode()
 		var desc = unit.compDescription
 		AUGraphAddNode(self.audioGraph, &desc!, &newInstrumentNode!)
 		
@@ -236,7 +235,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			
 			self.instrumentNode = newInstrumentNode
 			
-			AUGraphNodeInfo(self.audioGraph, self.instrumentNode!, nil, &self.instrumentUnit!)
+			//			AUGraphNodeInfo(self.audioGraph, self.instrumentNode!, nil, &self.instrumentUnit!)
 			
 			if (self.effectNode != nil)
 			{
@@ -244,7 +243,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			}
 			else
 			{
-				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode!, 0, self.ioNode!, 0)
+				AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode!, 0, self.ioNode, 0)
 			}
 			
 			self.connectedInstrument = true
