@@ -10,6 +10,18 @@ import UIKit
 import AudioUnit
 import AVFoundation
 
+let renderCallback :  @convention(c) (UnsafeMutablePointer<()>, UnsafeMutablePointer<AudioUnitRenderActionFlags>,
+	UnsafePointer<AudioTimeStamp>, UInt32, UInt32, UnsafeMutablePointer<AudioBufferList>) -> Int32 = {
+		(indata, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, ioData) -> Int32 in
+		//do actual render here
+		let fileURL = createTempURL("TEMPFILE")	// Create temporary file
+		print ("writing to file", fileURL)
+		var extAudioFile = ExtAudioFileRef()
+		ExtAudioFileOpenURL(fileURL, &extAudioFile)
+		ExtAudioFileWriteAsync(extAudioFile, inNumberFrames, ioData)
+		return noErr
+}
+
 class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 {
 	var connectedInstrument:Bool = false
@@ -20,6 +32,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	var effectUnit:AudioUnit?
 	var ioNode = AUNode()
 	var ioUnit:AudioUnit = nil
+	var format = AudioStreamBasicDescription()
 	
 	@IBOutlet var instrumentIconImageView:UIImageView?
 	@IBOutlet var effectIconImageView:UIImageView?
@@ -34,6 +47,30 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	{
 		super.viewDidLoad()
 		createAUGraph()
+		
+		let fileURL = createTempURL("TEMPFILE")	// Create temporary file
+		print ("writing to file", fileURL)
+		
+		//setup format
+		let session = AVAudioSession.sharedInstance()
+		
+		self.format.mSampleRate = session.sampleRate
+		self.format.mFormatID = kAudioFormatLinearPCM
+		self.format.mFormatFlags = kAudioFormatFlagIsFloat
+		self.format.mBytesPerPacket = 4
+		self.format.mFramesPerPacket = 1
+		self.format.mBytesPerFrame = 4
+		self.format.mChannelsPerFrame = 1
+		self.format.mBitsPerChannel = 32
+		
+		//do test file
+		
+		var extAudioFile = ExtAudioFileRef()
+		let filecreatestat = ExtAudioFileCreateWithURL(fileURL, kAudioFileCAFType, &self.format, nil, 0, &extAudioFile)
+		let fileopenstat = ExtAudioFileOpenURL(fileURL, &extAudioFile)
+		let filewritestat = ExtAudioFileWrite(extAudioFile, 0, nil)
+		let disposestat = ExtAudioFileDispose(extAudioFile)
+		print("file created?")
 		// Do any additional setup after loading the view, typically from a nib.
 	}
 	
@@ -74,16 +111,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			
 			AUGraphNodeInfo(self.audioGraph, self.ioNode, nil, &self.ioUnit)
 			
-			let session = AVAudioSession.sharedInstance()
-			var format = AudioStreamBasicDescription()
-			format.mSampleRate = session.sampleRate
-			format.mFormatID = kAudioFormatLinearPCM
-			format.mFormatFlags = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved
-			format.mBytesPerPacket = 4
-			format.mFramesPerPacket = 1
-			format.mBytesPerFrame = 4
-			format.mChannelsPerFrame = 2
-			format.mBitsPerChannel = 32
+
 			
 			AudioUnitSetProperty(self.ioUnit,
 			                     kAudioUnitProperty_StreamFormat,
@@ -277,49 +305,53 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	
 	@IBAction func record(sender : UIButton)
 	{
-		let fileURL = createTempURL("TEMPFILE")	// Create temporary file
-
-		let renderCallback :  @convention(c) (UnsafeMutablePointer<()>, UnsafeMutablePointer<AudioUnitRenderActionFlags>,
-			UnsafePointer<AudioTimeStamp>, UInt32, UInt32, UnsafeMutablePointer<AudioBufferList>) -> Int32 = {
-			(indata, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, ioData) -> Int32 in
-				//do actual render here
-				let extAudioFile = ExtAudioFileRef()
-				ExtAudioFileOpenURL(fileURL, extAudioFile)
-				ExtAudioFileWriteAsync(extAudioFile, inNumberFrames, ioData)
-				return noErr
-		}
-
 		
-		var inputCallback = AURenderCallbackStruct(inputProc: renderCallback, inputProcRefCon: nil)
 		
-		AudioUnitSetProperty(self.ioUnit,
-		                     kAudioOutputUnitProperty_SetInputCallback,
-		                     kAudioUnitScope_Global,
-		                     0,
-		                     &inputCallback,
-		                     UInt32(sizeof(AURenderCallbackStruct)))
-	}
-
-	
-	/*
-		if self.connectedInstrument
+		//record ioUnit input using callback
+		if self.ioUnit != nil
 		{
-			recorder->Stop();
-			recorder->Close();
-			delete recorder;
+			CAShow(UnsafeMutablePointer<AUGraph>(self.audioGraph))
+
 			
-			recorder = new CAAudioUnitOutputCapturer(instrument, (CFURLRef)fileURL, kAudioFileCAFType, tapFormat, 0);
 			
-			recorder->Start();
-			state = TransportStateRecording;
-			mTranslatedLastTimeRendered = 0;
-			canPlay = NO;
-		}
+			var inputCallback = AURenderCallbackStruct(inputProc: renderCallback, inputProcRefCon: nil)
+			//		let alert = UIAlertView(title: "DEBUG", message: "Input callback created",delegate: nil,cancelButtonTitle: nil,otherButtonTitles: "OK","")
+			//		alert.show()
+			print ("Setting callback")
+			AudioUnitSetProperty(self.ioUnit,
+			                     kAudioOutputUnitProperty_SetInputCallback,
+			                     kAudioUnitScope_Global,
+			                     0,
+			                     &inputCallback,
+			                     UInt32(sizeof(AURenderCallbackStruct)))
+			
+			//			let alert2 = UIAlertView(title: "DEBUG",	message: "Audio callback set", delegate: nil,cancelButtonTitle: nil,otherButtonTitles: "OK","")
+			//		alert2.show()
 	
-	*/
-		
+		}
+		else
+		{
+			print ("Io unit not configured")
+		}
+		/*
+		//get client format
+		var clientFormat:AudioStreamBasicDescription = AudioStreamBasicDescription()
+		//get size of CF
+		let clientFormatSize = sizeof(AudioStreamBasicDescription)
+		//get audio unit property for ioUnit
+		AudioUnitGetProperty(<#T##AudioUnit#>, <#T##AudioUnitPropertyID#>, <#T##AudioUnitScope#>, <#T##AudioUnitElement#>, <#T##UnsafeMutablePointer<Void>#>, <#T##UnsafeMutablePointer<UInt32>#>)
+		//set property for extaudiofile
+		ExtAudioFileSetProperty(<#T##inExtAudioFile: ExtAudioFileRef##ExtAudioFileRef#>, <#T##inPropertyID: ExtAudioFilePropertyID##ExtAudioFilePropertyID#>, <#T##inPropertyDataSize: UInt32##UInt32#>, <#T##inPropertyData: UnsafePointer<Void>##UnsafePointer<Void>#>)
+		//set ext audio file write async to file
+		ExtAudioFileWriteAsync(<#T##inExtAudioFile: ExtAudioFileRef##ExtAudioFileRef#>, <#T##inNumberFrames: UInt32##UInt32#>, <#T##ioData: UnsafePointer<AudioBufferList>##UnsafePointer<AudioBufferList>#>)
+		//audio unit add render notify (callback)
+		AudioUnitAddRenderNotify(ioUnit, renderCallback, <#T##inProcUserData: UnsafeMutablePointer<Void>##UnsafeMutablePointer<Void>#>)
+*/
+	}
+	
 	@IBAction func stopRecording(sender : UIButton)
 	{
+		AudioUnitRemoveRenderNotify(self.ioUnit, renderCallback, nil)
 		/*
 		- (void) stopRecording {
 			if (state == TransportStateRecording) {
