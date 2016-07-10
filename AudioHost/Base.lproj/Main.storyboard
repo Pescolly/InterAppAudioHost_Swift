@@ -45,6 +45,20 @@
                                     <outletCollection property="gestureRecognizers" destination="AhL-qT-XiB" appends="YES" id="GH3-tT-OGV"/>
                                 </connections>
                             </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="5gf-Rd-liZ">
+                                <rect key="frame" x="246" y="483" width="182" height="30"/>
+                                <state key="normal" title="Play Note"/>
+                                <connections>
+                                    <action selector="playNote:" destination="BYZ-38-t0r" eventType="touchDown" id="lP3-gg-zer"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dMg-K5-v7b">
+                                <rect key="frame" x="129" y="483" width="77" height="30"/>
+                                <state key="normal" title="Record"/>
+                                <connections>
+                                    <action selector="record:" destination="BYZ-38-t0r" eventType="touchDown" id="I8k-6d-4AD"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>

@@ -85,7 +85,7 @@ class SelectIAAUViewController: UITableViewController
 				let unit:InterAppAudioUnit = InterAppAudioUnit()
 				unit.compDescription = desc
 				unit.icon = AudioComponentGetIcon(component, 44.0)
-				
+				unit.component = component
 				
 				var name:Unmanaged<CFString>?
 				let stat = AudioComponentCopyName(component, &name)

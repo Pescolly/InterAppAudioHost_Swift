@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C00D4FE61D2A4373001E131E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00D4FE51D2A4373001E131E /* AudioToolbox.framework */; };
+		C02AA3C51D32201F0052405F /* FileIOFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02AA3C41D32201F0052405F /* FileIOFunctions.swift */; };
 		C0348C5F1D24F30E009685A3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0348C5E1D24F30E009685A3 /* AppDelegate.swift */; };
 		C0348C611D24F30E009685A3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0348C601D24F30E009685A3 /* ViewController.swift */; };
 		C0348C641D24F30E009685A3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C0348C621D24F30E009685A3 /* Main.storyboard */; };
@@ -20,6 +21,7 @@
 /* Begin PBXFileReference section */
 		C00D4FE51D2A4373001E131E /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		C00D4FE71D2A4373001E131E /* AudioHost.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = AudioHost.entitlements; sourceTree = "<group>"; };
+		C02AA3C41D32201F0052405F /* FileIOFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileIOFunctions.swift; sourceTree = "<group>"; };
 		C0348C5B1D24F30E009685A3 /* AudioHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0348C5E1D24F30E009685A3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C0348C601D24F30E009685A3 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				C00D4FE71D2A4373001E131E /* AudioHost.entitlements */,
+				C02AA3C41D32201F0052405F /* FileIOFunctions.swift */,
 				C0348C5E1D24F30E009685A3 /* AppDelegate.swift */,
 				C0348C701D263BB5009685A3 /* InterAppAudioUnit.swift */,
 				C0348C721D263D7B009685A3 /* SelectIAAUViewController.swift */,
@@ -160,6 +163,7 @@
 				C0348C611D24F30E009685A3 /* ViewController.swift in Sources */,
 				C0348C5F1D24F30E009685A3 /* AppDelegate.swift in Sources */,
 				C0348C711D263BB5009685A3 /* InterAppAudioUnit.swift in Sources */,
+				C02AA3C51D32201F0052405F /* FileIOFunctions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

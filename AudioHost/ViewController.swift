@@ -12,7 +12,7 @@ import AVFoundation
 
 class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 {
-	var connectedInstrument:Bool?
+	var connectedInstrument:Bool = false
 	var instrumentUnit:AudioUnit = nil
 	var instrumentNode:AUNode = AUNode()
 	var effectNode:AUNode?
@@ -127,7 +127,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	
 	func startStopGraphAsRequired()
 	{
-		if (connectedInstrument != nil)
+		if (connectedInstrument)
 		{
 			self.startAUGraph()
 		}
@@ -203,7 +203,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	
 	func connectEffect(audioUnit : InterAppAudioUnit)
 	{
-		if !connectedInstrument!
+		if !connectedInstrument
 		{
 			let alert = UIAlertView(title: "ERROR",
 			                        message: "You need to select instrument first",
@@ -245,7 +245,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		{
 			AUGraphConnectNodeInput(self.audioGraph, self.instrumentNode, 0, self.ioNode, 0)
 		}
-		
+	
 		self.connectedInstrument = true
 		self.instrumentIconImageView!.image = unit.icon
 		
@@ -253,6 +253,103 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		CAShow(UnsafeMutablePointer<AUGraph>(self.audioGraph))
 		
 	}
+	
+	@IBAction func playNote(sender : AnyObject)
+	{
+		if self.connectedInstrument
+		{
+			let noteOnCommand:UInt32 = (0x9 << 4) | 0
+			MusicDeviceMIDIEvent(self.instrumentUnit, noteOnCommand, 60, 100, 0)
+			
+			let delayInSeconds:UInt64 = 2
+			let popTime:dispatch_time_t = dispatch_time(DISPATCH_TIME_NOW, Int64((delayInSeconds * NSEC_PER_SEC)))
+			
+			dispatch_after(popTime, dispatch_get_main_queue(), {
+				() in
+				if self.connectedInstrument
+				{
+					let noteOffCommand:UInt32 = (0x8 << 4) | 0
+					MusicDeviceMIDIEvent(self.instrumentUnit, noteOffCommand, 60, 100, 0)
+				}
+			})
+		}
+	}
+	
+	@IBAction func record(sender : UIButton)
+	{
+		let fileURL = createTempURL("TEMPFILE")	// Create temporary file
+
+		let renderCallback :  @convention(c) (UnsafeMutablePointer<()>, UnsafeMutablePointer<AudioUnitRenderActionFlags>,
+			UnsafePointer<AudioTimeStamp>, UInt32, UInt32, UnsafeMutablePointer<AudioBufferList>) -> Int32 = {
+			(indata, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, ioData) -> Int32 in
+				//do actual render here
+				let extAudioFile = ExtAudioFileRef()
+				ExtAudioFileOpenURL(fileURL, extAudioFile)
+				ExtAudioFileWriteAsync(extAudioFile, inNumberFrames, ioData)
+				return noErr
+		}
+
+		
+		var inputCallback = AURenderCallbackStruct(inputProc: renderCallback, inputProcRefCon: nil)
+		
+		AudioUnitSetProperty(self.ioUnit,
+		                     kAudioOutputUnitProperty_SetInputCallback,
+		                     kAudioUnitScope_Global,
+		                     0,
+		                     &inputCallback,
+		                     UInt32(sizeof(AURenderCallbackStruct)))
+	}
+
+	
+	/*
+		if self.connectedInstrument
+		{
+			recorder->Stop();
+			recorder->Close();
+			delete recorder;
+			
+			recorder = new CAAudioUnitOutputCapturer(instrument, (CFURLRef)fileURL, kAudioFileCAFType, tapFormat, 0);
+			
+			recorder->Start();
+			state = TransportStateRecording;
+			mTranslatedLastTimeRendered = 0;
+			canPlay = NO;
+		}
+	
+	*/
+		
+	@IBAction func stopRecording(sender : UIButton)
+	{
+		/*
+		- (void) stopRecording {
+			if (state == TransportStateRecording) {
+				if (recorder) {
+					recorder->Stop();
+					recorder->Close();
+				}
+				
+				canPlay = YES;
+				mTranslatedLastTimeRendered = 0;
+				
+				if (fileURL && [[NSFileManager defaultManager] isReadableFileAtPath: fileURL.path] && canPlay) {         //Calculate duration
+					Check(AudioFileOpenURL((CFURLRef)fileURL, kAudioFileReadPermission, 0, &filePlayer.inputFile));
+					UInt32 propSize = sizeof(filePlayer.inputFormat);
+					Check(AudioFileGetProperty(filePlayer.inputFile, kAudioFilePropertyDataFormat, &propSize, &filePlayer.inputFormat));
+					UInt64 nPackets;
+					propSize = sizeof(nPackets);
+					Check(AudioFileGetProperty(filePlayer.inputFile,
+						kAudioFilePropertyAudioDataPacketCount,
+						&propSize, &nPackets));
+					durationOfFile = nPackets * filePlayer.inputFormat.mFramesPerPacket;
+				}
+				state = TransportStateStopped;
+				[self notifyObservers];
+				canRewind = YES;
+			}
+		}
+		*/
+	}
+	
 	
 	override func didReceiveMemoryWarning()
 	{

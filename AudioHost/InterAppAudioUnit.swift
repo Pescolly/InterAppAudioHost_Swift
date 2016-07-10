@@ -15,5 +15,6 @@ class InterAppAudioUnit : NSObject
 {
 	var name:String?
 	var compDescription:AudioComponentDescription?
+	var component:AudioComponent?
 	var icon:UIImage?
 }
