@@ -37,17 +37,17 @@ func listFilesOnDevice() -> [String]
 	do
 	{
 		let allItems = try manager.contentsOfDirectoryAtPath(documentDirectory)
-		print(allItems)
 		
 		for item in allItems
 		{
+			NSLog(item)
 			retpaths.append(documentDirectory.stringByAppendingString("/"+item))
 		}
 		
 	}
 	catch
 	{
-		print("Cannot load")
+		NSLog("Cannot load")
 	}
 	return retpaths
 }

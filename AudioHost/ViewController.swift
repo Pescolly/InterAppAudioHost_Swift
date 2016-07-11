@@ -9,16 +9,21 @@
 import UIKit
 import AudioUnit
 import AVFoundation
+import AudioToolbox
+
+
+let fileURL = createTempURL("TEMPFILE.caf")	// Create temporary file
 
 let renderCallback :  @convention(c) (UnsafeMutablePointer<()>, UnsafeMutablePointer<AudioUnitRenderActionFlags>,
 	UnsafePointer<AudioTimeStamp>, UInt32, UInt32, UnsafeMutablePointer<AudioBufferList>) -> Int32 = {
 		(indata, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, ioData) -> Int32 in
 		//do actual render here
-		let fileURL = createTempURL("TEMPFILE")	// Create temporary file
-		print ("writing to file", fileURL)
+		NSLog("in callback", fileURL)
 		var extAudioFile = ExtAudioFileRef()
-		ExtAudioFileOpenURL(fileURL, &extAudioFile)
-		ExtAudioFileWriteAsync(extAudioFile, inNumberFrames, ioData)
+		let openfilestat = ExtAudioFileOpenURL(fileURL, &extAudioFile)
+		NSLog("open file stat: %d",openfilestat)
+		let extaudiowrite = ExtAudioFileWriteAsync(extAudioFile, inNumberFrames, ioData)
+		NSLog("ext audio write stat: %d", extaudiowrite)
 		return noErr
 }
 
@@ -48,8 +53,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		super.viewDidLoad()
 		createAUGraph()
 		
-		let fileURL = createTempURL("TEMPFILE")	// Create temporary file
-		print ("writing to file", fileURL)
+		NSLog("writing to file", fileURL)
 		
 		//setup format
 		let session = AVAudioSession.sharedInstance()
@@ -65,12 +69,14 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		
 		//do test file
 		
-		var extAudioFile = ExtAudioFileRef()
-		let filecreatestat = ExtAudioFileCreateWithURL(fileURL, kAudioFileCAFType, &self.format, nil, 0, &extAudioFile)
+		var extAudioFile:ExtAudioFileRef = nil
+		let filecreatestat = ExtAudioFileCreateWithURL(fileURL, kAudioFileCAFType, &self.format, nil, 1, &extAudioFile)
 		let fileopenstat = ExtAudioFileOpenURL(fileURL, &extAudioFile)
-		let filewritestat = ExtAudioFileWrite(extAudioFile, 0, nil)
-		let disposestat = ExtAudioFileDispose(extAudioFile)
-		print("file created?")
+
+		if filecreatestat == noErr && fileopenstat == noErr
+		{
+			NSLog("file created")
+		}
 		// Do any additional setup after loading the view, typically from a nib.
 	}
 	
@@ -133,7 +139,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		}
 		else
 		{
-			print ("Err: ", stat)
+			NSLog("Err: ", stat)
 		}
 	}
 	
@@ -145,11 +151,12 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			try session.setPreferredSampleRate(session.sampleRate)
 			try session.setCategory(AVAudioSessionCategoryPlayback, withOptions: AVAudioSessionCategoryOptions.MixWithOthers)
 			try session.setActive(true)
+			NSLog("Audio session active")
 			
 		}
 		catch
 		{
-			print("FAILS")
+			NSLog("FAILS")
 		}
 	}
 	
@@ -179,6 +186,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			}
 			
 			AUGraphStart(audioGraph)
+			NSLog("Graph is initialized and started")
 			graphStarted = true
 		}
 	}
@@ -245,7 +253,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	
 	func connectInstrument(unit : InterAppAudioUnit)
 	{
-		print ("instrument selected")
+		NSLog("instrument selected")
 		
 		self.stopAUGraph()
 		
@@ -315,23 +323,21 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			
 			
 			var inputCallback = AURenderCallbackStruct(inputProc: renderCallback, inputProcRefCon: nil)
-			//		let alert = UIAlertView(title: "DEBUG", message: "Input callback created",delegate: nil,cancelButtonTitle: nil,otherButtonTitles: "OK","")
-			//		alert.show()
-			print ("Setting callback")
-			AudioUnitSetProperty(self.ioUnit,
+			let ausetProperty = AudioUnitSetProperty(self.ioUnit,
 			                     kAudioOutputUnitProperty_SetInputCallback,
 			                     kAudioUnitScope_Global,
 			                     0,
 			                     &inputCallback,
 			                     UInt32(sizeof(AURenderCallbackStruct)))
+			NSLog("AUSetProperty stat: %d", ausetProperty)
+			let rendernotifyStat = AudioUnitAddRenderNotify(self.ioUnit, renderCallback, nil)
+			NSLog("Render notify stat: %d", rendernotifyStat)
+			NSLog("Setting callback")
 			
-			//			let alert2 = UIAlertView(title: "DEBUG",	message: "Audio callback set", delegate: nil,cancelButtonTitle: nil,otherButtonTitles: "OK","")
-			//		alert2.show()
-	
 		}
 		else
 		{
-			print ("Io unit not configured")
+			NSLog("Io unit not configured")
 		}
 		/*
 		//get client format

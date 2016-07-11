@@ -78,7 +78,7 @@ class SelectIAAUViewController: UITableViewController
 			{
 				if err != noErr
 				{
-					print("Err in refresh list")
+					NSLog("Err in refresh list")
 					continue
 				}
 				
