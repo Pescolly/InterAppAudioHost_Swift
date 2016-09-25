@@ -10,18 +10,18 @@ import Foundation
 
 func getFilenameUsingDate() -> String
 {
-	let dateFormat = NSDateFormatter()
+	let dateFormat = DateFormatter()
 	dateFormat.dateFormat = "yyyy-MM-dd-HH-mm-ss"
-	let dateString = NSDate().timeIntervalSince1970.description
-	let filename = dateString.stringByReplacingOccurrencesOfString(".", withString: "-") + ".caf"
+	let dateString = Date().timeIntervalSince1970.description
+	let filename = dateString.replacingOccurrences(of: ".", with: "-") + ".caf"
 	return filename
 }
 
-func GetFilenameAndExtension(incomingFilepath:NSURL)->[String?]
+func GetFilenameAndExtension(_ incomingFilepath:URL)->[String?]
 {
-	let l = incomingFilepath.relativeString!.componentsSeparatedByString("/")
-	let file = l.last?.componentsSeparatedByString(".")[0]
-	let ext = l.last?.componentsSeparatedByString(".")[1]
+	let l = incomingFilepath.relativeString.components(separatedBy: "/")
+	let file = l.last?.components(separatedBy: ".")[0]
+	let ext = l.last?.components(separatedBy: ".")[1]
 	let rList = [file,ext]
 	return rList
 }
@@ -29,19 +29,19 @@ func GetFilenameAndExtension(incomingFilepath:NSURL)->[String?]
 func listFilesOnDevice() -> [String]
 {
 	
-	let paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+	let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
 	let documentDirectory = paths[0]
-	let manager = NSFileManager.defaultManager()
+	let manager = FileManager.default
 	var retpaths = [String]()
 	
 	do
 	{
-		let allItems = try manager.contentsOfDirectoryAtPath(documentDirectory)
+		let allItems = try manager.contentsOfDirectory(atPath: documentDirectory)
 		
 		for item in allItems
 		{
 			NSLog(item)
-			retpaths.append(documentDirectory.stringByAppendingString("/"+item))
+			retpaths.append(documentDirectory + ("/"+item))
 		}
 		
 	}
@@ -54,35 +54,35 @@ func listFilesOnDevice() -> [String]
 
 func GetDocumentsDirectory() -> String
 {
-	let paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true) as [String]
+	let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as [String]
 	let documentsDirectory = paths.first
 	return documentsDirectory!
 }
 
-func createURL(inFilename : String) -> NSURL
+func createURL(_ inFilename : String) -> URL
 {
-	let dirURL = NSURL(fileURLWithPath: GetDocumentsDirectory(), isDirectory: true)
-	return NSURL(fileURLWithPath: inFilename, relativeToURL: dirURL)
+	let dirURL = URL(fileURLWithPath: GetDocumentsDirectory(), isDirectory: true)
+	return URL(fileURLWithPath: inFilename, relativeTo: dirURL)
 }
 
-func createTempURL(inFilename : String) ->NSURL
+func createTempURL(_ inFilename : String) ->URL
 {
-	let dirURL = NSURL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-	return NSURL(fileURLWithPath: inFilename, relativeToURL: dirURL)
+	let dirURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+	return URL(fileURLWithPath: inFilename, relativeTo: dirURL)
 }
 
-func getBogusURL() ->NSURL
+func getBogusURL() ->URL
 {
-	let dirURL = NSURL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-	return NSURL(fileURLWithPath: "BOGUS_METER_FILE", relativeToURL: dirURL)
+	let dirURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+	return URL(fileURLWithPath: "BOGUS_METER_FILE", relativeTo: dirURL)
 }
 
-func URLFor(filename : String) -> NSURL?
+func URLFor(_ filename : String) -> URL?
 {
-	if let dirs : [String] = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true) as? [String]
+	if let dirs : [String] = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.allDomainsMask, true) as? [String]
 	{
 		let dir = dirs[0] //documents directory
-		let path = NSURL(fileURLWithPath: dir, isDirectory: true)
+		let path = URL(fileURLWithPath: dir, isDirectory: true)
 		return path
 	}
 	return nil

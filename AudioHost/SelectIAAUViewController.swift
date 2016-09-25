@@ -12,8 +12,8 @@ import AudioToolbox
 
 protocol SelectIAAUViewControllerDelegate
 {
-	func selectIAAUViewController(viewController:SelectIAAUViewController, didSelectUnit audioUnit:InterAppAudioUnit)
-	func selectIAAUViewControllerWantsToClose(viewController: SelectIAAUViewController)
+	func selectIAAUViewController(_ viewController:SelectIAAUViewController, didSelectUnit audioUnit:InterAppAudioUnit)
+	func selectIAAUViewControllerWantsToClose(_ viewController: SelectIAAUViewController)
 }
 
 class SelectIAAUViewController: UITableViewController
@@ -27,11 +27,11 @@ class SelectIAAUViewController: UITableViewController
         super.viewDidLoad()
 
 		self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel",
-		                                                        style: .Plain,
+		                                                        style: .plain,
 		                                                        target: self,
-		                                                        action: "closeTapped:")
+		                                                        action: #selector(SelectIAAUViewController.closeTapped(_:)))
 		
-		self.tableView .registerClass(UITableViewCell.classForCoder(), forCellReuseIdentifier: "Cell")
+		self.tableView .register(UITableViewCell.classForCoder(), forCellReuseIdentifier: "Cell")
 		
 		self.refreshList()
 		
@@ -42,14 +42,14 @@ class SelectIAAUViewController: UITableViewController
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
 
-	func closeTapped(sender: AnyObject)
+	func closeTapped(_ sender: AnyObject)
 	{
 		self.delegate?.selectIAAUViewControllerWantsToClose(self)
 	}
 	
 	init (withSearchDescription:AudioComponentDescription)
 	{
-		super.init(style: UITableViewStyle.Plain)
+		super.init(style: UITableViewStyle.plain)
 		self.searchDescription = withSearchDescription
 	}
 	
@@ -61,7 +61,7 @@ class SelectIAAUViewController: UITableViewController
 	func refreshList()
 	{
 		let unitss = NSMutableArray()
-		var component:AudioComponent = nil
+		var component:AudioComponent? = nil
 		while (true)
 		{
 
@@ -72,7 +72,7 @@ class SelectIAAUViewController: UITableViewController
 			}
 			
 			var desc:AudioComponentDescription = AudioComponentDescription()
-			let err = AudioComponentGetDescription(component, &desc)
+			let err = AudioComponentGetDescription(component!, &desc)
 			if (desc.componentType == kAudioUnitType_RemoteInstrument ||
 			desc.componentType == kAudioUnitType_RemoteGenerator )
 			{
@@ -84,17 +84,17 @@ class SelectIAAUViewController: UITableViewController
 				
 				let unit:InterAppAudioUnit = InterAppAudioUnit()
 				unit.compDescription = desc
-				unit.icon = AudioComponentGetIcon(component, 44.0)
+				unit.icon = AudioComponentGetIcon(component!, 44.0)
 				unit.component = component
 				
 				var name:Unmanaged<CFString>?
-				let stat = AudioComponentCopyName(component, &name)
+				let stat = AudioComponentCopyName(component!, &name)
 				
 				if (name != nil)
 				{
 					//	let nameString:String = name!.toOpaque() as! CFStringRef as String
 					unit.name = name.debugDescription
-					unitss.addObject(unit)
+					unitss.add(unit)
 				}
 			}
 		}
@@ -109,79 +109,33 @@ class SelectIAAUViewController: UITableViewController
         // Dispose of any resources that can be recreated.
     }
 	
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int
+    override func numberOfSections(in tableView: UITableView) -> Int
 	{
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
 	{
         // #warning Incomplete implementation, return the number of rows
         return units.count
     }
 	
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell 
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell 
 	{
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
 
-		let unit:InterAppAudioUnit = self.units[indexPath.row] as! InterAppAudioUnit
+		let unit:InterAppAudioUnit = self.units[(indexPath as NSIndexPath).row] as! InterAppAudioUnit
 		cell.imageView?.image = unit.icon
 		cell.textLabel?.text = unit.name
 		
         return cell
     }
 	
-	override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath)
+	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
 	{
-		let unit = self.units[indexPath.row]
+		let unit = self.units[(indexPath as NSIndexPath).row]
 		delegate?.selectIAAUViewController(self, didSelectUnit: unit as! InterAppAudioUnit)
 	}
-	
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            // Delete the row from the data source
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
