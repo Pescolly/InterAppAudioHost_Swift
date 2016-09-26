@@ -14,32 +14,25 @@ import AudioToolbox
 
 let fileURL = createTempURL("TEMPFILE.caf")	// Create temporary file
 
+var extAudioFile : ExtAudioFileRef?  = nil
+
+let renderCallback : AURenderCallback? = {
+	(indata, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, ioData) -> Int32 in
+	print ("in callback: ", fileURL)
+	NSLog("in number frames: %d", inNumberFrames)
+	
+	if (inBusNumber == 0 && ioActionFlags.pointee == AudioUnitRenderActionFlags.unitRenderAction_PostRender)
+	{
+		ioData?.pointee.mNumberBuffers = 1
+		let extaudiowrite = ExtAudioFileWriteAsync(extAudioFile!, inNumberFrames, ioData)
+		NSLog("ext audio write stat: %d", extaudiowrite)
+	}
+	
+	return noErr
+}
 
 class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 {
-
-	let renderCallback : AURenderCallback? = {
-		(indata, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, ioData) -> Int32 in
-		print ("in callback: ", fileURL)
-		NSLog("in number frames: %d", inNumberFrames)
-		
-		let vc = UnsafeMutablePointer<ViewController>.allocate(capacity: MemoryLayout<ViewController>.size)
-		let THIS : ViewController = vc.pointee
-		
-		if (inBusNumber == 0 && ioActionFlags.pointee == AudioUnitRenderActionFlags.unitRenderAction_PostRender)
-		{
-			ioData?.pointee.mNumberBuffers = 1
-			let extaudiowrite = ExtAudioFileWriteAsync(THIS.extAudioFile!, inNumberFrames, ioData)
-			NSLog("ext audio write stat: %d", extaudiowrite)
-		}
-		
-		
-		return noErr
-	}
-
-	var extAudioFile : ExtAudioFileRef?  = nil
-
-	
 	var connectedInstrument:Bool = false
 	var instrumentUnit:AudioUnit? = nil
 	var instrumentNode:AUNode = AUNode()
@@ -95,14 +88,7 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	}
 	
 	//protocols
-	func selectIAAUViewController(_ viewController:SelectIAAUViewController, didSelectUnit audioUnit:InterAppAudioUnit)
-	{
-		self.dismiss(animated: true, completion: nil)
-		if (viewController == _instrumentSelectViewController)
-		{
-			self.connectInstrument(audioUnit)
-		}
-	}
+
 	
 	func selectIAAUViewControllerWantsToClose(_ viewController: SelectIAAUViewController)
 	{
@@ -232,15 +218,20 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 		self.present(navController, animated: true, completion: nil)
 	}
 	
+	func selectIAAUViewController(_ viewController:SelectIAAUViewController, didSelectUnit audioUnit:InterAppAudioUnit)
+	{
+		self.dismiss(animated: true, completion: nil)
+		if (viewController == _instrumentSelectViewController)
+		{
+			self.connectInstrument(audioUnit)
+		}
+	}
+	
 	func connectInstrument(_ unit : InterAppAudioUnit)
 	{
 		NSLog("instrument selected")
 		
 		self.stopAUGraph()
-		
-		var newInstrumentNode:AUNode = AUNode()
-		var desc:AudioComponentDescription = unit.compDescription!
-		AUGraphAddNode(self.audioGraph!, &desc, &newInstrumentNode)
 		
 		if self.instrumentNode != 0
 		{
@@ -249,20 +240,20 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 			self.instrumentIconImageView?.image = nil
 			self.instrumentUnit = nil
 		}
-		
-		self.instrumentNode = newInstrumentNode
-		
+
+		var desc : AudioComponentDescription = unit.compDescription!
+		AUGraphAddNode(self.audioGraph!, &desc, &self.instrumentNode)
 		AUGraphNodeInfo(self.audioGraph!, self.instrumentNode, nil, &self.instrumentUnit)
-		
-		if (self.effectNode != nil)
-		{
-			AUGraphConnectNodeInput(self.audioGraph!, self.instrumentNode, 0, self.effectNode!, 0)
-		}
-		else
-		{
-			AUGraphConnectNodeInput(self.audioGraph!, self.instrumentNode, 0, self.ioNode, 0)
-		}
+		AUGraphConnectNodeInput(self.audioGraph!, self.instrumentNode, 0, self.ioNode, 0)
 	
+		var maxFrames = 4096;
+		let status = AudioUnitSetProperty(self.instrumentUnit!,
+		                              kAudioUnitProperty_MaximumFramesPerSlice,
+		                              kAudioUnitScope_Output,
+		                              0,
+		                              &maxFrames,
+		                              UInt32(MemoryLayout<UInt32>.size));
+
 		self.connectedInstrument = true
 		self.instrumentIconImageView!.image = unit.icon
 		
@@ -295,20 +286,13 @@ class ViewController: UIViewController, SelectIAAUViewControllerDelegate
 	
 	@IBAction func record(_ sender : UIButton)
 	{
-		var openfilestat = ExtAudioFileOpenURL(fileURL as CFURL, &extAudioFile)
-
+		let openfilestat = ExtAudioFileOpenURL(fileURL as CFURL, &extAudioFile)
+		if openfilestat != 0 { print ("err: \(openfilestat)") }
 		//record ioUnit input using callback
 		if self.ioUnit != nil
 		{
 			CAShow(UnsafeMutablePointer<AUGraph>(self.audioGraph!))
 			var inputCallback : AURenderCallbackStruct = AURenderCallbackStruct(inputProc: renderCallback, inputProcRefCon: nil)
-			let ausetProperty : OSStatus = AudioUnitSetProperty(self.ioUnit!,
-			                     kAudioOutputUnitProperty_SetInputCallback,
-			                     kAudioUnitScope_Global,
-			                     0,
-			                     &inputCallback,
-			                     UInt32(MemoryLayout<AURenderCallbackStruct>.size))
-			NSLog("AUSetProperty stat: %d", ausetProperty)
 			let rendernotifyStat : OSStatus = AudioUnitAddRenderNotify(self.ioUnit!, renderCallback!, nil)
 			NSLog("Render notify stat: %d", rendernotifyStat)
 			NSLog("Setting callback")
